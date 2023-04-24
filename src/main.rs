@@ -1,3 +1,6 @@
+mod pieces;
+mod game;
+
 slint::include_modules!();
 
 fn main() -> Result<(), slint::PlatformError> {

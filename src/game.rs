@@ -1,0 +1,171 @@
+use std::time::Instant;
+
+use rand::Rng;
+use crate::pieces::{Color, Piece, HeldPiece, PIECES, PIECE_COUNT};
+
+pub struct Game {
+    grid: [[Option<Color>; Game::GRID_WIDTH as usize]; Game::GRID_HEIGHT as usize],
+    current: HeldPiece,
+    next: Piece,
+    score: u32,
+    rng: rand::rngs::ThreadRng,
+    time: Instant
+}
+
+impl Game {
+    pub const GRID_WIDTH: u16 = 10;
+    pub const GRID_HEIGHT: u16 = 20;
+
+    pub fn new() -> Game {
+        let mut rng = rand::thread_rng();
+
+        Game {
+            grid: [[None; Game::GRID_WIDTH as usize]; Game::GRID_HEIGHT as usize],
+            current: HeldPiece {
+                x: Game::GRID_WIDTH as i16 / 2i16 - 2i16, 
+                y: -1, 
+                rotation: 0, 
+                piece: *PIECES[rng.gen_range(0..PIECE_COUNT)]
+            },
+            next: *PIECES[rng.gen_range(0..PIECE_COUNT)],
+            score: 0,
+            rng,
+            time: Instant::now()
+        }
+    }
+
+    pub fn update(&mut self) {
+        let now = Instant::now();
+        let delta = now.duration_since(self.time).as_millis();
+        if delta > 100 {
+            self.tick();
+            self.time = now;
+        }
+    }
+
+    fn tick(&mut self) {
+        if self.move_and_collide(HeldPiece::newton) {
+            self.boup();
+            let cleared = self.clear_lines();
+            self.score += self.compute_score(cleared);
+        }
+    }
+
+    fn clear_lines(&mut self) -> u8 {
+        let mut cleared = 0u8;
+        let width = Game::GRID_WIDTH as usize;
+        let height = Game::GRID_HEIGHT as usize;
+        let mut y = height;
+        while y > 0 {
+            y -= 1;
+            let row = &self.grid[y];
+            let mut x = 0usize;
+            while x < width as usize && row[x].is_some() {
+                x += 1;
+            }
+            // If line cleared
+            if x == width {
+                let mut s_y = y;
+                while s_y > 0 {
+                    self.grid[s_y] = self.grid[s_y-1];
+                    s_y -= 1;
+                }
+                cleared += 1 + self.clear_lines();
+                y = 0;
+            }
+        }
+
+        cleared
+    }
+
+    fn boup(&mut self) -> bool {
+        // Save current piece in grid
+        let shape = self.current.get_shape();
+        for i in 0..4 {
+            let p = shape[i];
+            let p_x = self.current.x + p.0 as i16;
+            let p_y = self.current.y + p.1 as i16;
+            if p_y < 0 {
+                return true;
+            }
+            self.grid[p_y as usize][p_x as usize] = Some(self.current.piece.color);
+        }
+        self.current = HeldPiece {
+            x: Game::GRID_WIDTH as i16 / 2 - 2,
+            y: -1,
+            rotation: 0,
+            piece: self.next
+        };
+        self.next = *PIECES[self.rng.gen_range(0..PIECE_COUNT)];
+        false
+    }
+
+    /// Returns true if a collison occured
+    fn move_and_collide(&mut self, func: fn(&mut HeldPiece)) -> bool
+    {
+        let mut test_piece = self.current.clone();
+        func(&mut test_piece);
+        if self.collides(&test_piece) {
+            true
+        } else {
+            func(&mut self.current);
+            false
+        }
+    }
+
+    fn collides(&self, piece: &HeldPiece) -> bool {
+        let shape = piece.get_shape();
+        let mut collision = false;
+        let mut s_i = 0;
+        while !collision && s_i < 4 {
+            let p = shape[s_i];
+            let p_x = piece.x + p.0 as i16;
+            let p_y = piece.y + p.1 as i16;
+            
+            // Check if out of bounds
+            if p_x < 0 || 
+                p_x >= Game::GRID_WIDTH as i16 || p_y >= Game::GRID_HEIGHT as i16
+            {
+                collision = true;
+            } else if p_y >= 0 && self.grid[p_y as usize][p_x as usize].is_some() { // Check if grid has some at p_x and p_y
+                collision = true;
+            }
+
+            s_i+=1;
+        }
+
+        collision
+    }
+    
+    fn compute_score(&self, cleared: u8) -> u32 {
+        let score = match cleared {
+            0 => 0,
+            1 => 40,
+            2 => 100,
+            3 => 300,
+            4 => 1200,
+            _ => panic!("Invalid line number")
+        };
+
+        return score;
+    }
+
+    pub fn get_grid<'a>(&'a self) -> &'a [
+        [Option<Color>; Game::GRID_WIDTH as usize]; Game::GRID_HEIGHT as usize]
+    {
+           &self.grid 
+    }
+
+    pub fn get_current<'a>(&'a self) -> &'a HeldPiece {
+        &self.current
+    }
+    
+    pub fn get_next<'a>(&'a self) -> &'a Piece {
+        &self.next
+    }
+
+    pub fn get_score(&self) -> u32 {
+        self.score
+    }
+
+}
