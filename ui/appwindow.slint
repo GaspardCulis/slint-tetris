@@ -15,15 +15,21 @@ component Block inherits Rectangle {
     border-color: block-color.darker(0.3);
 }
 
+export global GameGridAdapter { 
+    in property <Size> grid_size;
+    in property <[[color]]> grid;
+}
+
 component GameGrid inherits VerticalLayout {
-    in property <Size> grid_size: {width: 8, height: 8};
+    in property <Size> grid_size <=> GameGridAdapter.grid_size;
+    in property <[[color]]> grid <=> GameGridAdapter.grid;
     
     VerticalLayout {
         spacing: 0px;
         for y in grid-size.height : HorizontalLayout {
             spacing: 0px;
             for x in grid-size.width : Block {
-                block-color: mod(x + y, 2) == 0 ? blue :  red;
+                block-color: grid[y][x];
             }
         }
     }
