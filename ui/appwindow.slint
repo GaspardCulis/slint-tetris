@@ -1,17 +1,35 @@
-import { Button, VerticalBox } from "std-widgets.slint";
+import { Button, VerticalBox , HorizontalBox, GridBox, ListView} from "std-widgets.slint";
+
+struct Size {
+    width: int,
+    height: int
+}
+
+component Block inherits Rectangle {
+    in property <color> block_color ;
+
+    width: 24px;
+    height: 24px;
+    background: block-color; 
+    border-width: 2px;
+    border-color: block-color.darker(0.3);
+}
 
 export component AppWindow inherits Window {
+
+
     in-out property<int> counter: 42;
+    in property <Size> grid_size;
     callback request-increase-value();
-    VerticalBox {
-        Text {
-            text: "Counter: \{root.counter}";
-        }
-        Button {
-            text: "Increase value";
-            clicked => {
-                root.request-increase-value();
+    HorizontalLayout {
+        VerticalLayout {
+            spacing: 0px;
+            for y in grid-size.height : HorizontalLayout {
+                spacing: 0px;
+                for x in grid-size.width : Block {
+                    block-color: mod(x + y, 2) == 0 ? blue :  red;
+                }
             }
-        }
-    }
+         }
+     } 
 }
