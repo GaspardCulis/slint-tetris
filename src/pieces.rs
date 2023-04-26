@@ -1,7 +1,7 @@
 use std::clone::Clone;
 pub const PIECE_COUNT: usize = 7;
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Color {
     CYAN,
     BLUE,
