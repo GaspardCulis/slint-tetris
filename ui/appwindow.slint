@@ -37,9 +37,17 @@ component GameGrid inherits VerticalLayout {
 
 export component AppWindow inherits Window {
 
-    HorizontalLayout {
-        GameGrid {
-
+    callback key-pressed(string);
+    forward-focus: key-handler;
+    key-handler := FocusScope {
+        key-pressed(event) => {
+            root.key-pressed(event.text);
+            return accept;
         }
-    } 
+        HorizontalLayout {
+            GameGrid {
+            }
+        } 
+
+    }
 }
