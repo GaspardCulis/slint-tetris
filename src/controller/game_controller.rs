@@ -1,31 +1,26 @@
 use crate::{game::Game, pieces, ui::*};
 use slint::*;
-use std::cell::RefCell;
-use std::{rc::Rc, time::Duration};
+use std::{rc::Rc, time::Duration, sync::Arc, cell::{Ref, RefCell}};
 
-pub fn setup(window: &AppWindow, game: RefCell<Game>) -> Timer {
+pub fn setup(window: &AppWindow, game: Rc<RefCell<Game>>) -> Timer {
     window.global::<GameGridAdapter>().set_grid_size(Size {
         height: Game::GRID_HEIGHT.into(),
         width: Game::GRID_WIDTH.into(),
     });
 
     let update_timer = Timer::default();
-    update_timer.start(TimerMode::Repeated, Duration::from_millis(100), {
+    update_timer.start(TimerMode::Repeated, Duration::from_millis(30), {
         let weak_window = window.as_weak();
 
         move || {
-            update_ui(&weak_window.unwrap().global::<GameGridAdapter>(), &game);
+            update_ui(&weak_window.unwrap().global::<GameGridAdapter>(), &game.borrow());
         }
     });
 
     update_timer
 }
 
-fn update_ui(game_grid_adapter: &GameGridAdapter, game: &RefCell<Game>) {
-    let mut game = game.borrow_mut();
-
-    game.update();
-
+fn update_ui(game_grid_adapter: &GameGridAdapter, game: &Game) {
     let grid = game.get_grid();
     let vec = VecModel::<ModelRc<slint::Color>>::default();
     for i in 0..Game::GRID_HEIGHT {

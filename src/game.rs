@@ -50,6 +50,22 @@ impl Game {
             self.score += self.compute_score(cleared);
         }
     }
+    
+    pub fn handle_input(&mut self, keycode: char) {
+        match keycode {
+            'd' => self.move_and_collide(HeldPiece::move_right),
+            'q' => self.move_and_collide(HeldPiece::move_left),
+            'z' => self.move_and_collide(HeldPiece::rotate_right),
+            'c' => self.move_and_collide(HeldPiece::rotate_right),
+            'x' => self.move_and_collide(HeldPiece::rotate_left),
+            's' => self.move_and_collide(HeldPiece::newton),
+            ' ' => {
+                while !self.move_and_collide(HeldPiece::newton) {}
+                true
+            }
+            _ => false
+        };
+    }
 
     fn clear_lines(&mut self) -> u8 {
         let mut cleared = 0u8;
@@ -159,7 +175,7 @@ impl Game {
     pub fn get_current<'a>(&'a self) -> &'a HeldPiece {
         &self.current
     }
-    
+
     pub fn get_next<'a>(&'a self) -> &'a Piece {
         &self.next
     }
