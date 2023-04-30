@@ -1,6 +1,6 @@
 use crate::{game::Game, pieces, ui::*};
 use slint::*;
-use std::{rc::Rc, time::Duration, sync::Arc, cell::{Ref, RefCell}};
+use std::{rc::Rc, time::Duration, cell::RefCell};
 
 pub fn setup(window: &AppWindow, game: Rc<RefCell<Game>>) -> Timer {
     window.global::<GameAdapter>().set_grid_size(Size {

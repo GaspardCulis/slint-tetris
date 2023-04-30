@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::Arc, cell::RefCell, time::Duration};
+use std::{rc::Rc, cell::RefCell, time::Duration};
 
 use game::Game;
 use slint::{SharedString, Timer};

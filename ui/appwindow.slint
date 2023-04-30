@@ -13,6 +13,7 @@ component Block inherits Rectangle {
     background: block-color; 
     border-width: 2px;
     border-color: block-color.darker(0.3);
+    border-radius: 3px;
 }
 
 export global GameAdapter { 
@@ -25,8 +26,13 @@ export global GameAdapter {
 component GridBlockDisplay inherits Rectangle {
     in property <Size> grid_size;
     in property <[[color]]> grid;
-    
+   
+    border-width: 4px;
+    border-color: self.background.darker(0.3);
+    border-radius: 4px;
+
     VerticalLayout {
+        padding: 4px;
         spacing: 0px;
         for y in grid-size.height : HorizontalLayout {
             spacing: 0px;
@@ -38,42 +44,49 @@ component GridBlockDisplay inherits Rectangle {
 }
 
 export component AppWindow inherits Window {
-
     callback key-pressed(string);
     forward-focus: key-handler;
+
     key-handler := FocusScope {
         key-pressed(event) => {
             root.key-pressed(event.text);
             return accept;
         }
-        HorizontalLayout {
-            spacing: 24px;
+        Rectangle {
+            padding: 12px;
+            background: #222;
+            
+            HorizontalLayout {
+                spacing: 24px;
 
-            GridBlockDisplay {
-                grid_size <=> GameAdapter.grid_size;
-                grid <=> GameAdapter.grid;
-                background: #444;
-            }
-
-            VerticalLayout {
                 GridBlockDisplay {
-                    grid_size: { width: 4, height: 4};
-                    grid <=> GameAdapter.next_piece;
-
+                    grid_size <=> GameAdapter.grid_size;
+                    grid <=> GameAdapter.grid;
                     background: #444;
                 }
+
                 VerticalLayout {
-                    alignment: start;
-                    Text {
-                        text: "Score:";
-                        font-size: 16px;
+                    spacing: 10px;
+
+                    GridBlockDisplay {
+                        grid_size: { width: 4, height: 4};
+                        grid <=> GameAdapter.next_piece;
+                        background: #444;
                     }
-                    Text {
-                        text: GameAdapter.score;
+                    VerticalLayout {
+                        alignment: start;
+                        Text {
+                            text: "Score:";
+                            font-size: 16px;
+                            color: white;
+                        }
+                        Text {
+                            text: GameAdapter.score;
+                            color: white;
+                       }
                     }
                 }
             }
-        } 
-
+        }
     }
 }
