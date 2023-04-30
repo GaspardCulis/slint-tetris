@@ -3,7 +3,7 @@ use slint::*;
 use std::{rc::Rc, time::Duration, sync::Arc, cell::{Ref, RefCell}};
 
 pub fn setup(window: &AppWindow, game: Rc<RefCell<Game>>) -> Timer {
-    window.global::<GameGridAdapter>().set_grid_size(Size {
+    window.global::<GameAdapter>().set_grid_size(Size {
         height: Game::GRID_HEIGHT.into(),
         width: Game::GRID_WIDTH.into(),
     });
@@ -13,14 +13,14 @@ pub fn setup(window: &AppWindow, game: Rc<RefCell<Game>>) -> Timer {
         let weak_window = window.as_weak();
 
         move || {
-            update_ui(&weak_window.unwrap().global::<GameGridAdapter>(), &game.borrow());
+            update_ui(&weak_window.unwrap().global::<GameAdapter>(), &game.borrow());
         }
     });
 
     update_timer
 }
 
-fn update_ui(game_grid_adapter: &GameGridAdapter, game: &Game) {
+fn update_ui(game_grid_adapter: &GameAdapter, game: &Game) {
     let grid = game.get_grid();
     let vec = VecModel::<ModelRc<slint::Color>>::default();
     for i in 0..Game::GRID_HEIGHT {

@@ -15,14 +15,15 @@ component Block inherits Rectangle {
     border-color: block-color.darker(0.3);
 }
 
-export global GameGridAdapter { 
+export global GameAdapter { 
     in property <Size> grid_size;
     in property <[[color]]> grid;
+    in property <[[color]]> next_piece;
 }
 
-component GameGrid inherits VerticalLayout {
-    in property <Size> grid_size <=> GameGridAdapter.grid_size;
-    in property <[[color]]> grid <=> GameGridAdapter.grid;
+component GridBlockDisplay inherits Rectangle {
+    in property <Size> grid_size;
+    in property <[[color]]> grid;
     
     VerticalLayout {
         spacing: 0px;
@@ -45,7 +46,20 @@ export component AppWindow inherits Window {
             return accept;
         }
         HorizontalLayout {
-            GameGrid {
+            spacing: 24px;
+
+            GridBlockDisplay {
+                grid_size <=> GameAdapter.grid_size;
+                grid <=> GameAdapter.grid;
+                background: #444;
+            }
+
+            VerticalLayout {
+                GridBlockDisplay {
+                    grid_size: { width: 4, height: 4};
+                    grid <=> GameAdapter.next_piece;
+                    background: #444;
+                }
             }
         } 
 
