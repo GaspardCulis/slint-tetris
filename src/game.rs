@@ -1,11 +1,11 @@
 use std::time::Instant;
 
 use rand::Rng;
-use crate::pieces::{Color, Piece, HeldPiece, PIECES, PIECE_COUNT};
+use crate::pieces::{Color, Piece, PhysicalPiece, PIECES, PIECE_COUNT};
 
 pub struct Game {
     grid: [[Option<Color>; Game::GRID_WIDTH as usize]; Game::GRID_HEIGHT as usize],
-    current: HeldPiece,
+    current: PhysicalPiece,
     next: Piece,
     held: Option<Piece>,
     score: u32,
@@ -22,7 +22,7 @@ impl Game {
 
         Game {
             grid: [[None; Game::GRID_WIDTH as usize]; Game::GRID_HEIGHT as usize],
-            current: HeldPiece {
+            current: PhysicalPiece {
                 x: Game::GRID_WIDTH as i16 / 2i16 - 2i16, 
                 y: -1, 
                 rotation: 0, 
@@ -46,7 +46,7 @@ impl Game {
     }
 
     fn tick(&mut self) {
-        if self.move_and_collide(HeldPiece::newton) {
+        if self.move_and_collide(PhysicalPiece::newton) {
             self.boup();
             let cleared = self.clear_lines();
             self.score += self.compute_score(cleared);
@@ -66,14 +66,14 @@ impl Game {
     
     pub fn handle_input(&mut self, keycode: char) {
         match keycode {
-            'd' | '' => self.move_and_collide(HeldPiece::move_right),
-            'q' | '' => self.move_and_collide(HeldPiece::move_left),
-            'z' | '' => self.move_and_collide(HeldPiece::rotate_right),
-            'c' => self.move_and_collide(HeldPiece::rotate_right),
-            'x' => self.move_and_collide(HeldPiece::rotate_left),
-            's' => self.move_and_collide(HeldPiece::newton),
+            'd' | '' => self.move_and_collide(PhysicalPiece::move_right),
+            'q' | '' => self.move_and_collide(PhysicalPiece::move_left),
+            'z' | '' => self.move_and_collide(PhysicalPiece::rotate_right),
+            'c' => self.move_and_collide(PhysicalPiece::rotate_right),
+            'x' => self.move_and_collide(PhysicalPiece::rotate_left),
+            's' => self.move_and_collide(PhysicalPiece::newton),
             ' ' => {
-                while !self.move_and_collide(HeldPiece::newton) {}
+                while !self.move_and_collide(PhysicalPiece::newton) {}
                 true
             }
             _ => false
@@ -124,7 +124,7 @@ impl Game {
     }
 
     fn spawn_new(&mut self) {
-        self.current = HeldPiece {
+        self.current = PhysicalPiece {
             x: Game::GRID_WIDTH as i16 / 2 - 2,
             y: -1,
             rotation: 0,
@@ -134,7 +134,7 @@ impl Game {
     }
 
     /// Returns true if a collison occured
-    fn move_and_collide(&mut self, func: fn(&mut HeldPiece)) -> bool
+    fn move_and_collide(&mut self, func: fn(&mut PhysicalPiece)) -> bool
     {
         let mut test_piece = self.current.clone();
         func(&mut test_piece);
@@ -146,7 +146,7 @@ impl Game {
         }
     }
 
-    fn collides(&self, piece: &HeldPiece) -> bool {
+    fn collides(&self, piece: &PhysicalPiece) -> bool {
         let shape = piece.get_shape();
         let mut collision = false;
         let mut s_i = 0;
@@ -189,7 +189,7 @@ impl Game {
            &self.grid 
     }
 
-    pub fn get_current<'a>(&'a self) -> &'a HeldPiece {
+    pub fn get_current<'a>(&'a self) -> &'a PhysicalPiece {
         &self.current
     }
 

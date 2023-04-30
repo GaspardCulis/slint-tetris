@@ -25,14 +25,14 @@ impl Piece {
 }
 
 #[derive(Clone)]
-pub struct HeldPiece {
+pub struct PhysicalPiece {
     pub x: i16,
     pub y: i16,
     pub rotation: usize,
     pub piece: Piece
 }
 
-impl HeldPiece {
+impl PhysicalPiece {
     pub fn rotate_right(&mut self) {
         self.rotation = (self.rotation + 1) % 4;
     }
