@@ -77,6 +77,7 @@ impl Game {
             'c' => self.move_and_collide(PhysicalPiece::rotate_right),
             'x' => self.move_and_collide(PhysicalPiece::rotate_left),
             's' => self.move_and_collide(PhysicalPiece::newton),
+            'h' => {self.hold(); true},
             ' ' => {
                 while !self.move_and_collide(PhysicalPiece::newton) {}
                 true
@@ -200,6 +201,10 @@ impl Game {
 
     pub fn get_next<'a>(&'a self) -> &'a Piece {
         &self.next
+    }
+
+    pub fn get_held<'a>(&'a self) -> &'a Option<Piece> {
+        &self.held
     }
 
     pub fn get_score(&self) -> u32 {

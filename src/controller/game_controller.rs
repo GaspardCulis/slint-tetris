@@ -47,30 +47,46 @@ fn update_ui(game_grid_adapter: &GameAdapter, game: &Game) {
 
     // Next piece
     let next = game.get_next();
-    let next_shape = next.get_shape(0);
-    let vec = VecModel::<ModelRc<slint::Color>>::default();
-    for i in 0..4 {
-        let row = VecModel::<slint::Color>::from_slice(&[ col2col(None), col2col(None), col2col(None), col2col(None) ]);
-        vec.insert(i, row);
-    }
-    for cell in next_shape {
-        let x = cell.0 as usize;
-        let y = cell.1 as usize;
-
-        let row = vec.row_data(y);
-        row.unwrap().set_row_data(x, col2col(Some(next.color)));
-    }
-
     game_grid_adapter.set_next_piece(
         SPiece { 
-            blocks: Rc::new(vec).clone().into(), 
+            blocks: piece_to_model(next), 
             is_I: next.color == pieces::Color::CYAN, 
             is_O: next.color == pieces::Color::YELLOW 
         }
     );
     
+    // Held piece
+    if game.get_held().is_some() {
+        let held = game.get_held().unwrap();
+        game_grid_adapter.set_held_piece(
+            SPiece { 
+                blocks: piece_to_model(&held), 
+                is_I: held.color == pieces::Color::CYAN, 
+                is_O: held.color == pieces::Color::YELLOW 
+            }
+        );
+    }
+
     // Score
     game_grid_adapter.set_score(game.get_score() as i32);
+}
+
+fn piece_to_model(piece: &pieces::Piece) -> ModelRc<ModelRc<Color>> {
+    let piece_shape = piece.get_shape(0);
+    let vec = VecModel::<ModelRc<slint::Color>>::default();
+    for i in 0..4 {
+        let row = VecModel::<slint::Color>::from_slice(&[ col2col(None), col2col(None), col2col(None), col2col(None) ]);
+        vec.insert(i, row);
+    }
+    for cell in piece_shape {
+        let x = cell.0 as usize;
+        let y = cell.1 as usize;
+
+        let row = vec.row_data(y);
+        row.unwrap().set_row_data(x, col2col(Some(piece.color)));
+    }
+
+    Rc::new(vec).clone().into()
 }
 
 fn col2col(color: Option<pieces::Color>) -> slint::Color {
