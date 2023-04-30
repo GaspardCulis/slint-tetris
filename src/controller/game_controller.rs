@@ -21,6 +21,7 @@ pub fn setup(window: &AppWindow, game: Rc<RefCell<Game>>) -> Timer {
 }
 
 fn update_ui(game_grid_adapter: &GameAdapter, game: &Game) {
+    // Grid
     let grid = game.get_grid();
     let vec = VecModel::<ModelRc<slint::Color>>::default();
     for i in 0..Game::GRID_HEIGHT {
@@ -30,7 +31,7 @@ fn update_ui(game_grid_adapter: &GameAdapter, game: &Game) {
         }
         vec.insert(i.into(), Rc::new(row).clone().into());
     }
-
+    // Current piece
     let current = game.get_current();
     for cell in current.get_shape() {
         let x = current.x + cell.0 as i16;
@@ -42,8 +43,31 @@ fn update_ui(game_grid_adapter: &GameAdapter, game: &Game) {
                 .set_row_data(x as usize, col2col(Some(current.piece.color)));
         }
     }
-
     game_grid_adapter.set_grid(Rc::new(vec).clone().into());
+
+    // Next piece
+    let next = game.get_next();
+    let next_shape = next.get_shape(0);
+    let vec = VecModel::<ModelRc<slint::Color>>::default();
+    for i in 0..4 {
+        let row = VecModel::<slint::Color>::from_slice(&[ col2col(None), col2col(None), col2col(None), col2col(None) ]);
+        vec.insert(i, row);
+    }
+    for cell in next_shape {
+        let mut x = cell.0 as usize;
+        let mut y = cell.1 as usize;
+
+        if next.color == pieces::BLOCK_O.color {
+            x += 1;
+        } else if next.color != pieces::BLOCK_I.color {
+            y += 1;
+        }
+
+        let row = vec.row_data(y);
+        row.unwrap().set_row_data(x, col2col(Some(next.color)));
+    }
+
+    game_grid_adapter.set_next_piece(Rc::new(vec).clone().into());
 }
 
 fn col2col(color: Option<pieces::Color>) -> slint::Color {
