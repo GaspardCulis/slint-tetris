@@ -68,6 +68,9 @@ fn update_ui(game_grid_adapter: &GameAdapter, game: &Game) {
     }
 
     game_grid_adapter.set_next_piece(Rc::new(vec).clone().into());
+    
+    // Score
+    game_grid_adapter.set_score(game.get_score() as i32);
 }
 
 fn col2col(color: Option<pieces::Color>) -> slint::Color {
