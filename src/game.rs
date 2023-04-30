@@ -7,6 +7,7 @@ pub struct Game {
     grid: [[Option<Color>; Game::GRID_WIDTH as usize]; Game::GRID_HEIGHT as usize],
     current: HeldPiece,
     next: Piece,
+    held: Option<Piece>,
     score: u32,
     rng: rand::rngs::ThreadRng,
     time: Instant
@@ -28,6 +29,7 @@ impl Game {
                 piece: *PIECES[rng.gen_range(0..PIECE_COUNT)]
             },
             next: *PIECES[rng.gen_range(0..PIECE_COUNT)],
+            held: None,
             score: 0,
             rng,
             time: Instant::now()
@@ -48,6 +50,17 @@ impl Game {
             self.boup();
             let cleared = self.clear_lines();
             self.score += self.compute_score(cleared);
+        }
+    }
+
+    fn hold(&mut self) {
+        if self.held.is_none() {
+            self.held = self.current;
+            self.spawn_new();
+        } else {
+            let bkp = self.held;
+            self.held = self.current;
+            self.current = bkp;
         }
     }
     
@@ -106,6 +119,11 @@ impl Game {
             }
             self.grid[p_y as usize][p_x as usize] = Some(self.current.piece.color);
         }
+        self.spawn_new();
+        false
+    }
+
+    fn spawn_new(&mut self) {
         self.current = HeldPiece {
             x: Game::GRID_WIDTH as i16 / 2 - 2,
             y: -1,
@@ -113,7 +131,6 @@ impl Game {
             piece: self.next
         };
         self.next = *PIECES[self.rng.gen_range(0..PIECE_COUNT)];
-        false
     }
 
     /// Returns true if a collison occured
