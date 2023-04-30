@@ -54,20 +54,20 @@ fn update_ui(game_grid_adapter: &GameAdapter, game: &Game) {
         vec.insert(i, row);
     }
     for cell in next_shape {
-        let mut x = cell.0 as usize;
-        let mut y = cell.1 as usize;
-
-        if next.color == pieces::BLOCK_O.color {
-            x += 1;
-        } else if next.color != pieces::BLOCK_I.color {
-            y += 1;
-        }
+        let x = cell.0 as usize;
+        let y = cell.1 as usize;
 
         let row = vec.row_data(y);
         row.unwrap().set_row_data(x, col2col(Some(next.color)));
     }
 
-    game_grid_adapter.set_next_piece(Rc::new(vec).clone().into());
+    game_grid_adapter.set_next_piece(
+        SPiece { 
+            blocks: Rc::new(vec).clone().into(), 
+            is_I: next.color == pieces::Color::CYAN, 
+            is_O: next.color == pieces::Color::YELLOW 
+        }
+    );
     
     // Score
     game_grid_adapter.set_score(game.get_score() as i32);
@@ -75,13 +75,13 @@ fn update_ui(game_grid_adapter: &GameAdapter, game: &Game) {
 
 fn col2col(color: Option<pieces::Color>) -> slint::Color {
     match color {
-        Some(pieces::Color::CYAN) => slint::Color::from_rgb_u8(0, 255, 255),
-        Some(pieces::Color::BLUE) => slint::Color::from_rgb_u8(0, 0, 255),
-        Some(pieces::Color::ORANGE) => slint::Color::from_rgb_u8(255, 165, 0),
-        Some(pieces::Color::YELLOW) => slint::Color::from_rgb_u8(255, 255, 0),
-        Some(pieces::Color::GREEN) => slint::Color::from_rgb_u8(0, 255, 0),
-        Some(pieces::Color::PURPLE) => slint::Color::from_rgb_u8(160, 0, 160),
-        Some(pieces::Color::RED) => slint::Color::from_rgb_u8(255, 0, 0),
+        Some(pieces::Color::CYAN) => slint::Color::from_rgb_u8(82, 177, 252),
+        Some(pieces::Color::BLUE) => slint::Color::from_rgb_u8(60, 118, 181),
+        Some(pieces::Color::ORANGE) => slint::Color::from_rgb_u8(255, 92, 27),
+        Some(pieces::Color::YELLOW) => slint::Color::from_rgb_u8(251, 206, 5),
+        Some(pieces::Color::GREEN) => slint::Color::from_rgb_u8(67, 213, 97),
+        Some(pieces::Color::PURPLE) => slint::Color::from_rgb_u8(164, 105, 184),
+        Some(pieces::Color::RED) => slint::Color::from_rgb_u8(255, 1, 39),
         None => slint::Color::from_argb_u8(0, 0, 0, 0),
     }
 }

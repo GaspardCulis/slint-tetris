@@ -1,45 +1,78 @@
 import { Button, VerticalBox , HorizontalBox, GridBox, ListView} from "std-widgets.slint";
+import { Theme } from "./theme.slint";
 
 struct Size {
     width: int,
     height: int
 }
 
+struct SPiece {
+    blocks: [[color]],
+    is_I: bool,
+    is_O: bool
+}
+
+component ShadedBox inherits Rectangle {
+    padding: 20px;
+
+    background: Theme.palette.primary;
+
+    border-radius: 10px;
+    drop-shadow-blur: 20px;
+    drop-shadow-color: Theme.palette.secondary;
+}
+
 component Block inherits Rectangle {
     in property <color> block_color ;
+    in property <length> size;
 
-    width: 24px;
-    height: 24px;
+    width: size;
+    height: size;
     background: block-color; 
-    border-width: 2px;
+    border-width: size / 12;
     border-color: block-color.darker(0.3);
-    border-radius: 3px;
+    border-radius: size / 4;
 }
 
 export global GameAdapter { 
     in property <Size> grid_size;
     in property <[[color]]> grid;
-    in property <[[color]]> next_piece;
-    in property <int> score: 42;
+    in property <SPiece> next_piece;
+    in property <SPiece> held_piece;
+    in property <int> score: 0;
 }
 
-component GridBlockDisplay inherits Rectangle {
+component GridBlockDisplay inherits VerticalLayout {
     in property <Size> grid_size;
     in property <[[color]]> grid;
-   
-    border-width: 4px;
-    border-color: self.background.darker(0.3);
-    border-radius: 4px;
+    in property <length> block_size: 24px;
 
-    VerticalLayout {
-        padding: 4px;
-        spacing: 0px;
-        for y in grid-size.height : HorizontalLayout {
-            spacing: 0px;
-            for x in grid-size.width : Block {
-                block-color: grid[y][x];
-            }
+    padding: 4px;
+    spacing: 2px;
+    for y in grid-size.height : HorizontalLayout {
+        spacing: 2px;
+        for x in grid-size.width : Block {
+            block-color: grid[y][x];
+            size: block-size;
         }
+    }
+}
+
+export component PieceDisplay inherits HorizontalLayout {
+    in property <SPiece> piece;
+
+    width: 18px * 5;
+    alignment: center;
+    padding-top: piece.is-I ? -9px : 4px;
+    GridBlockDisplay { 
+        grid-size: {
+            width: piece.is-I ? 4 : piece.is-O ? 2 : 3, 
+            height: 2
+        };
+        block-size: 18px;
+        padding: 0px;
+
+        grid: piece.blocks;
     }
 }
 
@@ -53,38 +86,79 @@ export component AppWindow inherits Window {
             return accept;
         }
         Rectangle {
-            padding: 12px;
-            background: #222;
+            background: Theme.palette.primary;
             
-            HorizontalLayout {
-                spacing: 24px;
+            VerticalLayout {
+                padding: 12px;
+                HorizontalLayout { // Top section
+                    spacing: 24px;
+                    VerticalLayout {
+                        spacing: 8px;
+                        HorizontalLayout {
+                            alignment: space-around;
+                            Text {
+                                text: "NEXT";
+                                color: Theme.palette.text;
+                                letter-spacing: Theme.textStyle.letter-spacing;
+                            }
+                            Text {
+                                text: "HOLD";
+                                color: Theme.palette.text;
+                                letter-spacing: Theme.textStyle.letter-spacing;
+                            }
+                        }
+                        HorizontalLayout {
+                            alignment: stretch;
+                            ShadedBox {
+                                height: 60px;
 
-                GridBlockDisplay {
-                    grid_size <=> GameAdapter.grid_size;
-                    grid <=> GameAdapter.grid;
-                    background: #444;
-                }
+                                HorizontalBox {
+                                    alignment: space-around;
 
-                VerticalLayout {
-                    spacing: 10px;
+                                    PieceDisplay {
+                                        piece: GameAdapter.next-piece;
+                                    }
 
-                    GridBlockDisplay {
-                        grid_size: { width: 4, height: 4};
-                        grid <=> GameAdapter.next_piece;
-                        background: #444;
+                                    PieceDisplay {
+                                        piece: GameAdapter.next-piece;
+                                    }
+                                }
+                            }
+                        }
                     }
                     VerticalLayout {
-                        alignment: start;
+                        alignment: stretch;
+                        spacing: 8px;
                         Text {
-                            text: "Score:";
-                            font-size: 16px;
-                            color: white;
+                            text: "SCORE";
+                            horizontal-alignment: center;
+                            horizontal-stretch: 1;
+                            color: Theme.palette.text;
+                            letter-spacing: Theme.textStyle.letter-spacing;
                         }
-                        Text {
-                            text: GameAdapter.score;
-                            color: white;
-                       }
+                        ShadedBox {
+                            vertical-stretch: 2;
+                            Text {
+                                text: GameAdapter.score;
+                                color: Theme.palette.text;
+                                font-size: 24px;
+                                font-weight: 600;
+                            }
+                        }
                     }
+                }
+
+                spacing: 24px;
+
+                ShadedBox {
+                    GridBlockDisplay {
+                        grid_size <=> GameAdapter.grid_size;
+                        grid <=> GameAdapter.grid;
+                    }
+                }
+
+                HorizontalLayout {
+
                 }
             }
         }

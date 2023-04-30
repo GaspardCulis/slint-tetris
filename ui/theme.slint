@@ -1,0 +1,33 @@
+export struct Palette {
+    primary: brush,
+    secondary: brush,
+    text: brush
+
+}
+
+export struct TextStyle {
+    letter-spacing: length
+}
+
+export global Theme {
+    in property <Palette> palette: {
+        primary: #EDEBE9,
+        secondary: #AAA,
+
+        text: #013E74
+    };
+
+    in property <TextStyle> textStyle: {
+        letter-spacing: 3px
+    };
+}
+
+
+export global ThemeDark {
+    in property <Palette> palette: {
+        primary: #1E2429,
+        secondary: Colors.black,
+
+        text: #EAEAE7
+    };
+}
