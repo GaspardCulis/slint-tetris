@@ -60,7 +60,7 @@ impl Game {
         } else {
             let bkp = self.held;
             self.held = self.current;
-            self.current = bkp;
+            self.current = bkp.unwrap();
         }
     }
     
