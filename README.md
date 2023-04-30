@@ -4,7 +4,14 @@ A Tetris remake that's using [Slint](https://slint-ui.com) for the user interfac
 
 ## Showcase
 
-![Wow](.github/img/screenshot-1.png)
+![V1](.github/img/screenshot-1.png)
+*v1*
+
+![V2-light](.github/img/screenshot-2.png)
+*v2 Light*
+
+![V2-light](.github/img/screenshot-3.png)
+*v2 Dark*
 
 ## Usage
 
