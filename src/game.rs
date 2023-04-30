@@ -55,12 +55,17 @@ impl Game {
 
     fn hold(&mut self) {
         if self.held.is_none() {
-            self.held = self.current;
+            self.held = Some(self.current.piece);
             self.spawn_new();
         } else {
             let bkp = self.held;
-            self.held = self.current;
-            self.current = bkp.unwrap();
+            self.held = Some(self.current.piece);
+            self.current = PhysicalPiece {
+                x: Game::GRID_WIDTH as i16 / 2 - 2,
+                y: -1,
+                rotation: 0,
+                piece: bkp.unwrap()
+            };
         }
     }
     
