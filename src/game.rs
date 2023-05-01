@@ -1,4 +1,14 @@
-use std::time::Instant;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+
+use std::time::*;
+
+#[cfg(target_arch = "wasm32")] #[wasm_bindgen] extern "C" { #[wasm_bindgen(js_namespace = Date, js_name = now)] fn date_now() -> f64; }
+#[cfg(target_arch = "wasm32")] #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)] pub struct Instant(u64);
+#[cfg(target_arch = "wasm32")] impl Instant {
+    pub fn now() -> Self { Self(date_now() as u64) }
+    pub fn duration_since(&self, earlier: Instant) -> Duration { Duration::from_millis(self.0 - earlier.0) }
+}
 
 use rand::Rng;
 use crate::pieces::{Color, Piece, PhysicalPiece, PIECES, PIECE_COUNT};

@@ -57,6 +57,7 @@ impl PhysicalPiece {
         self.piece.get_shape(self.rotation)  
     }
 
+    #[allow(dead_code)]
     pub fn get_piece<'a>(&'a self) -> &'a Piece {
         &self.piece  
     }

@@ -19,12 +19,12 @@ pub mod ui {
 use ui::*;
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
-pub fn main() -> Result<(), slint::PlatformError> {
+pub fn main() {
 
     #[cfg(all(debug_assertions, target_arch = "wasm32"))]
     console_error_panic_hook::set_once();
 
-    let ui = AppWindow::new()?;
+    let ui = AppWindow::new().unwrap();
     let game = Rc::new(RefCell::new(Game::new()));
 
     let _game_controller = game_controller::setup(&ui, game.clone());
@@ -44,5 +44,5 @@ pub fn main() -> Result<(), slint::PlatformError> {
         game.handle_input(keycode);
     });
 
-    ui.run()
+    ui.run().unwrap();
 }
