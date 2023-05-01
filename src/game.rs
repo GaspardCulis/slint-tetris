@@ -8,6 +8,7 @@ pub struct Game {
     current: PhysicalPiece,
     next: Piece,
     held: Option<Piece>,
+    has_held: bool,
     score: u32,
     rng: rand::rngs::ThreadRng,
     time: Instant
@@ -30,6 +31,7 @@ impl Game {
             },
             next: *PIECES[rng.gen_range(0..PIECE_COUNT)],
             held: None,
+            has_held: false,
             score: 0,
             rng,
             time: Instant::now()
@@ -39,7 +41,7 @@ impl Game {
     pub fn update(&mut self) {
         let now = Instant::now();
         let delta = now.duration_since(self.time).as_millis();
-        if delta > 100 {
+        if delta > 150 {
             self.tick();
             self.time = now;
         }
@@ -50,11 +52,14 @@ impl Game {
             self.boup();
             let cleared = self.clear_lines();
             self.score += self.compute_score(cleared);
+            self.has_held = false;
         }
     }
 
     fn hold(&mut self) {
-        if self.held.is_none() {
+        if self.has_held {
+            return;
+        } else if self.held.is_none() {
             self.held = Some(self.current.piece);
             self.spawn_new();
         } else {
@@ -67,6 +72,7 @@ impl Game {
                 piece: bkp.unwrap()
             };
         }
+        self.has_held = true;
     }
     
     pub fn handle_input(&mut self, keycode: char) {
