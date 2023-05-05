@@ -58,6 +58,17 @@ component GridBlockDisplay inherits VerticalLayout {
     }
 }
 
+component HUDOverlay inherits Rectangle {
+    in-out property <float> background-opacity: 0.3;
+
+    background: rgba(100, 100,100, background-opacity);
+    border-radius: 10px;
+
+    animate background { 
+        duration: 500ms;
+    }
+}
+
 export component PieceDisplay inherits HorizontalLayout {
     in property <SPiece> piece;
 
@@ -154,6 +165,9 @@ export component AppWindow inherits Window {
                     GridBlockDisplay {
                         grid_size <=> GameAdapter.grid_size;
                         grid <=> GameAdapter.grid;
+                    }
+                    HUDOverlay {
+
                     }
                 }
 
