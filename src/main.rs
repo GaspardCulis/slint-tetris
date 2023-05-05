@@ -40,8 +40,14 @@ pub fn main() {
     });
 
     let ui_handle = ui.as_weak();
+    let game_handle = game.clone();
     ui.global::<GameAdapter>().on_play_pressed(move || {
-        ui_handle.unwrap().global::<GameAdapter>().set_playing(true);
+        let ui = ui_handle.unwrap();
+        let game_adapter = ui.global::<GameAdapter>();
+        if game_adapter.get_game_over() {
+            game_handle.replace(Game::new());
+        }
+        game_adapter.set_playing(true);
 
         println!("Helo");
     });

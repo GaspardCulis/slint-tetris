@@ -3,15 +3,27 @@ use wasm_bindgen::prelude::*;
 
 use std::time::*;
 
-#[cfg(target_arch = "wasm32")] #[wasm_bindgen] extern "C" { #[wasm_bindgen(js_namespace = Date, js_name = now)] fn date_now() -> f64; }
-#[cfg(target_arch = "wasm32")] #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)] pub struct Instant(u64);
-#[cfg(target_arch = "wasm32")] impl Instant {
-    pub fn now() -> Self { Self(date_now() as u64) }
-    pub fn duration_since(&self, earlier: Instant) -> Duration { Duration::from_millis(self.0 - earlier.0) }
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = Date, js_name = now)]
+    fn date_now() -> f64;
+}
+#[cfg(target_arch = "wasm32")]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Instant(u64);
+#[cfg(target_arch = "wasm32")]
+impl Instant {
+    pub fn now() -> Self {
+        Self(date_now() as u64)
+    }
+    pub fn duration_since(&self, earlier: Instant) -> Duration {
+        Duration::from_millis(self.0 - earlier.0)
+    }
 }
 
+use crate::pieces::{Color, PhysicalPiece, Piece, PIECES, PIECE_COUNT};
 use rand::Rng;
-use crate::pieces::{Color, Piece, PhysicalPiece, PIECES, PIECE_COUNT};
 
 pub struct Game {
     grid: [[Option<Color>; Game::GRID_WIDTH as usize]; Game::GRID_HEIGHT as usize],
@@ -21,7 +33,8 @@ pub struct Game {
     has_held: bool,
     score: u32,
     rng: rand::rngs::ThreadRng,
-    time: Instant
+    time: Instant,
+    game_over: bool,
 }
 
 impl Game {
@@ -34,17 +47,18 @@ impl Game {
         Game {
             grid: [[None; Game::GRID_WIDTH as usize]; Game::GRID_HEIGHT as usize],
             current: PhysicalPiece {
-                x: Game::GRID_WIDTH as i16 / 2i16 - 2i16, 
-                y: -1, 
-                rotation: 0, 
-                piece: *PIECES[rng.gen_range(0..PIECE_COUNT)]
+                x: Game::GRID_WIDTH as i16 / 2i16 - 2i16,
+                y: -1,
+                rotation: 0,
+                piece: *PIECES[rng.gen_range(0..PIECE_COUNT)],
             },
             next: *PIECES[rng.gen_range(0..PIECE_COUNT)],
             held: None,
             has_held: false,
             score: 0,
             rng,
-            time: Instant::now()
+            time: Instant::now(),
+            game_over: false,
         }
     }
 
@@ -59,7 +73,9 @@ impl Game {
 
     fn tick(&mut self) {
         if self.move_and_collide(PhysicalPiece::newton) {
-            self.boup();
+            if self.boup() {
+                self.game_over = true;
+            }
             let cleared = self.clear_lines();
             self.score += self.compute_score(cleared);
             self.has_held = false;
@@ -79,12 +95,12 @@ impl Game {
                 x: Game::GRID_WIDTH as i16 / 2 - 2,
                 y: -1,
                 rotation: 0,
-                piece: bkp.unwrap()
+                piece: bkp.unwrap(),
             };
         }
         self.has_held = true;
     }
-    
+
     pub fn handle_input(&mut self, keycode: char) {
         match keycode {
             'd' | '' => self.move_and_collide(PhysicalPiece::move_right),
@@ -93,12 +109,15 @@ impl Game {
             'c' => self.move_and_collide(PhysicalPiece::rotate_right),
             'x' => self.move_and_collide(PhysicalPiece::rotate_left),
             's' => self.move_and_collide(PhysicalPiece::newton),
-            'h' => {self.hold(); true},
+            'h' => {
+                self.hold();
+                true
+            }
             ' ' => {
                 while !self.move_and_collide(PhysicalPiece::newton) {}
                 true
             }
-            _ => false
+            _ => false,
         };
     }
 
@@ -118,7 +137,7 @@ impl Game {
             if x == width {
                 let mut s_y = y;
                 while s_y > 0 {
-                    self.grid[s_y] = self.grid[s_y-1];
+                    self.grid[s_y] = self.grid[s_y - 1];
                     s_y -= 1;
                 }
                 cleared += 1 + self.clear_lines();
@@ -150,14 +169,13 @@ impl Game {
             x: Game::GRID_WIDTH as i16 / 2 - 2,
             y: -1,
             rotation: 0,
-            piece: self.next
+            piece: self.next,
         };
         self.next = *PIECES[self.rng.gen_range(0..PIECE_COUNT)];
     }
 
     /// Returns true if a collison occured
-    fn move_and_collide(&mut self, func: fn(&mut PhysicalPiece)) -> bool
-    {
+    fn move_and_collide(&mut self, func: fn(&mut PhysicalPiece)) -> bool {
         let mut test_piece = self.current.clone();
         func(&mut test_piece);
         if self.collides(&test_piece) {
@@ -176,22 +194,21 @@ impl Game {
             let p = shape[s_i];
             let p_x = piece.x + p.0 as i16;
             let p_y = piece.y + p.1 as i16;
-            
+
             // Check if out of bounds
-            if p_x < 0 || 
-                p_x >= Game::GRID_WIDTH as i16 || p_y >= Game::GRID_HEIGHT as i16
-            {
+            if p_x < 0 || p_x >= Game::GRID_WIDTH as i16 || p_y >= Game::GRID_HEIGHT as i16 {
                 collision = true;
-            } else if p_y >= 0 && self.grid[p_y as usize][p_x as usize].is_some() { // Check if grid has some at p_x and p_y
+            } else if p_y >= 0 && self.grid[p_y as usize][p_x as usize].is_some() {
+                // Check if grid has some at p_x and p_y
                 collision = true;
             }
 
-            s_i+=1;
+            s_i += 1;
         }
 
         collision
     }
-    
+
     fn compute_score(&self, cleared: u8) -> u32 {
         let score = match cleared {
             0 => 0,
@@ -199,16 +216,16 @@ impl Game {
             2 => 100,
             3 => 300,
             4 => 1200,
-            _ => panic!("Invalid line number")
+            _ => panic!("Invalid line number"),
         };
 
         return score;
     }
 
-    pub fn get_grid<'a>(&'a self) -> &'a [
-        [Option<Color>; Game::GRID_WIDTH as usize]; Game::GRID_HEIGHT as usize]
-    {
-           &self.grid 
+    pub fn get_grid<'a>(
+        &'a self,
+    ) -> &'a [[Option<Color>; Game::GRID_WIDTH as usize]; Game::GRID_HEIGHT as usize] {
+        &self.grid
     }
 
     pub fn get_current<'a>(&'a self) -> &'a PhysicalPiece {
@@ -227,4 +244,7 @@ impl Game {
         self.score
     }
 
+    pub fn is_game_over(&self) -> bool {
+        self.game_over
+    }
 }

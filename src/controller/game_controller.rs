@@ -13,10 +13,13 @@ pub fn setup(window: &AppWindow, game: Rc<RefCell<Game>>) -> Timer {
         let weak_window = window.as_weak();
 
         move || {
-            update_ui(
-                &weak_window.unwrap().global::<GameAdapter>(),
-                &game.borrow(),
-            );
+            let window = weak_window.unwrap();
+            let game_adapter = window.global::<GameAdapter>();
+            if game.borrow().is_game_over() {
+                game_adapter.set_game_over(true);
+                game_adapter.set_playing(false);
+            }
+            update_ui(&game_adapter, &game.borrow());
         }
     });
 
