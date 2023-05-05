@@ -42,6 +42,8 @@ export global GameAdapter {
     in property <int> score: 0;
     in property <bool> playing: false;
     in property <bool> game_over: false;
+
+    callback play-pressed();
 }
 
 component GridBlockDisplay inherits VerticalLayout {
@@ -78,6 +80,17 @@ component HUDOverlay inherits Rectangle {
                 source: GameAdapter.game_over ? @image-url("C:/Users/a903823/Desktop/JAAJ/tetris-slint/assets/img/restart.svg") : @image-url("C:/Users/a903823/Desktop/JAAJ/tetris-slint/assets/img/play.svg");
                 width: 100px;
                 height: 100px;
+
+                opacity: area.has-hover ? 1 : 0.8;
+
+                area := TouchArea {
+                    visible: !GameAdapter.playing;
+                    width: parent.width;
+                    height: parent.height;
+                    clicked => {
+                        GameAdapter.play-pressed();
+                    }
+                }
             }
         }
     }
