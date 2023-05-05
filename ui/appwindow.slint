@@ -40,6 +40,8 @@ export global GameAdapter {
     in property <SPiece> next_piece;
     in property <SPiece> held_piece;
     in property <int> score: 0;
+    in property <bool> playing: false;
+    in property <bool> game_over: false;
 }
 
 component GridBlockDisplay inherits VerticalLayout {
@@ -59,13 +61,25 @@ component GridBlockDisplay inherits VerticalLayout {
 }
 
 component HUDOverlay inherits Rectangle {
-    in-out property <float> background-opacity: 0.3;
+    in-out property <float> background-opacity: GameAdapter.playing ? 0 : 0.5;
 
     background: rgba(100, 100,100, background-opacity);
     border-radius: 10px;
 
     animate background { 
         duration: 500ms;
+    }
+
+    HorizontalLayout {
+        alignment: center;
+        VerticalLayout {
+            alignment: center;
+            Image {
+                source: GameAdapter.game_over ? @image-url("C:/Users/a903823/Desktop/JAAJ/tetris-slint/assets/img/restart.svg") : @image-url("C:/Users/a903823/Desktop/JAAJ/tetris-slint/assets/img/play.svg");
+                width: 100px;
+                height: 100px;
+            }
+        }
     }
 }
 
