@@ -1,6 +1,6 @@
 use crate::{game::Game, pieces, ui::*};
 use slint::*;
-use std::{rc::Rc, time::Duration, cell::RefCell};
+use std::{cell::RefCell, rc::Rc, time::Duration};
 
 pub fn setup(window: &AppWindow, game: Rc<RefCell<Game>>) -> Timer {
     window.global::<GameAdapter>().set_grid_size(Size {
@@ -13,7 +13,13 @@ pub fn setup(window: &AppWindow, game: Rc<RefCell<Game>>) -> Timer {
         let weak_window = window.as_weak();
 
         move || {
-            update_ui(&weak_window.unwrap().global::<GameAdapter>(), &game.borrow());
+            let window = weak_window.unwrap();
+            let game_adapter = window.global::<GameAdapter>();
+            if game.borrow().is_game_over() {
+                game_adapter.set_game_over(true);
+                game_adapter.set_playing(false);
+            }
+            update_ui(&game_adapter, &game.borrow());
         }
     });
 
@@ -21,6 +27,9 @@ pub fn setup(window: &AppWindow, game: Rc<RefCell<Game>>) -> Timer {
 }
 
 fn update_ui(game_grid_adapter: &GameAdapter, game: &Game) {
+    if !game_grid_adapter.get_playing() {
+        return;
+    };
     // Grid
     let grid = game.get_grid();
     let vec = VecModel::<ModelRc<slint::Color>>::default();
@@ -47,24 +56,20 @@ fn update_ui(game_grid_adapter: &GameAdapter, game: &Game) {
 
     // Next piece
     let next = game.get_next();
-    game_grid_adapter.set_next_piece(
-        SPiece { 
-            blocks: piece_to_model(next), 
-            is_I: next.color == pieces::Color::CYAN, 
-            is_O: next.color == pieces::Color::YELLOW 
-        }
-    );
-    
+    game_grid_adapter.set_next_piece(SPiece {
+        blocks: piece_to_model(next),
+        is_I: next.color == pieces::Color::CYAN,
+        is_O: next.color == pieces::Color::YELLOW,
+    });
+
     // Held piece
     if game.get_held().is_some() {
         let held = game.get_held().unwrap();
-        game_grid_adapter.set_held_piece(
-            SPiece { 
-                blocks: piece_to_model(&held), 
-                is_I: held.color == pieces::Color::CYAN, 
-                is_O: held.color == pieces::Color::YELLOW 
-            }
-        );
+        game_grid_adapter.set_held_piece(SPiece {
+            blocks: piece_to_model(&held),
+            is_I: held.color == pieces::Color::CYAN,
+            is_O: held.color == pieces::Color::YELLOW,
+        });
     }
 
     // Score
@@ -75,7 +80,12 @@ fn piece_to_model(piece: &pieces::Piece) -> ModelRc<ModelRc<Color>> {
     let piece_shape = piece.get_shape(0);
     let vec = VecModel::<ModelRc<slint::Color>>::default();
     for i in 0..4 {
-        let row = VecModel::<slint::Color>::from_slice(&[ col2col(None), col2col(None), col2col(None), col2col(None) ]);
+        let row = VecModel::<slint::Color>::from_slice(&[
+            col2col(None),
+            col2col(None),
+            col2col(None),
+            col2col(None),
+        ]);
         vec.insert(i, row);
     }
     for cell in piece_shape {

@@ -1,6 +1,6 @@
 # Tetris Slint
 
-A Tetris remake that's using [Slint](https://slint-ui.com) for the user interface.
+A Tetris remake that's using [Slint](https://slint-ui.com) for the user interface. [web-demo](https://gaspardculis.github.io/slint-tetris/)
 
 ## Showcase
 

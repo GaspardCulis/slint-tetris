@@ -1,4 +1,4 @@
-use std::{rc::Rc, cell::RefCell, time::Duration};
+use std::{cell::RefCell, rc::Rc, time::Duration};
 
 use game::Game;
 use slint::{SharedString, Timer};
@@ -20,7 +20,6 @@ use ui::*;
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
 pub fn main() {
-
     #[cfg(all(debug_assertions, target_arch = "wasm32"))]
     console_error_panic_hook::set_once();
 
@@ -28,15 +27,31 @@ pub fn main() {
     let game = Rc::new(RefCell::new(Game::new()));
 
     let _game_controller = game_controller::setup(&ui, game.clone());
- 
+
     let game_handle = game.clone();
+    let ui_handle = ui.as_weak();
     let game_update_timer = Timer::default();
     game_update_timer.start(slint::TimerMode::Repeated, Duration::from_millis(30), {
         move || {
-            game_handle.borrow_mut().update();
+            if ui_handle.unwrap().global::<GameAdapter>().get_playing() {
+                game_handle.borrow_mut().update();
+            }
         }
     });
-    
+
+    let ui_handle = ui.as_weak();
+    let game_handle = game.clone();
+    ui.global::<GameAdapter>().on_play_pressed(move || {
+        let ui = ui_handle.unwrap();
+        let game_adapter = ui.global::<GameAdapter>();
+        if game_adapter.get_game_over() {
+            game_handle.replace(Game::new());
+        }
+        game_adapter.set_playing(true);
+
+        println!("Helo");
+    });
+
     let game_handle = game.clone();
     ui.on_key_pressed(move |key_text: SharedString| {
         let keycode = key_text.as_str().chars().nth(0).unwrap();

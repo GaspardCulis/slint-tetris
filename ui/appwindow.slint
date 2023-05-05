@@ -40,6 +40,10 @@ export global GameAdapter {
     in property <SPiece> next_piece;
     in property <SPiece> held_piece;
     in property <int> score: 0;
+    in property <bool> playing: false;
+    in property <bool> game_over: false;
+
+    callback play-pressed();
 }
 
 component GridBlockDisplay inherits VerticalLayout {
@@ -54,6 +58,44 @@ component GridBlockDisplay inherits VerticalLayout {
         for x in grid-size.width : Block {
             block-color: grid[y][x];
             size: block-size;
+        }
+    }
+}
+
+component HUDOverlay inherits Rectangle {
+    in-out property <float> background-opacity: GameAdapter.playing ? 0.0 : 0.5;
+
+    background: rgba(100, 100,100, background-opacity);
+    border-radius: 10px;
+    visible: !(background-opacity == 0.0);
+
+    animate background-opacity { 
+        duration: 500ms;
+    }
+
+    HorizontalLayout {
+        alignment: center;
+        VerticalLayout {
+            alignment: center;
+            Image {
+                source: GameAdapter.game_over ? @image-url("assets/img/restart.svg") : @image-url("assets/img/play.svg");
+                width: 100px;
+                height: 100px;
+
+                opacity:  GameAdapter.playing ? 0 : area.has-hover ? 1 : 0.8;
+
+                animate opacity { 
+                    duration: 500ms;
+                }
+
+                area := TouchArea {
+                    width: parent.width;
+                    height: parent.height;
+                    clicked => {
+                        GameAdapter.play-pressed();
+                    }
+                }
+            }
         }
     }
 }
@@ -154,6 +196,9 @@ export component AppWindow inherits Window {
                     GridBlockDisplay {
                         grid_size <=> GameAdapter.grid_size;
                         grid <=> GameAdapter.grid;
+                    }
+                    HUDOverlay {
+
                     }
                 }
 
