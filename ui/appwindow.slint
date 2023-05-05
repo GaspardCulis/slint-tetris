@@ -63,12 +63,13 @@ component GridBlockDisplay inherits VerticalLayout {
 }
 
 component HUDOverlay inherits Rectangle {
-    in-out property <float> background-opacity: GameAdapter.playing ? 0 : 0.5;
+    in-out property <float> background-opacity: GameAdapter.playing ? 0.0 : 0.5;
 
     background: rgba(100, 100,100, background-opacity);
     border-radius: 10px;
+    visible: !(background-opacity == 0.0);
 
-    animate background { 
+    animate background-opacity { 
         duration: 500ms;
     }
 
@@ -81,10 +82,13 @@ component HUDOverlay inherits Rectangle {
                 width: 100px;
                 height: 100px;
 
-                opacity: area.has-hover ? 1 : 0.8;
+                opacity:  GameAdapter.playing ? 0 : area.has-hover ? 1 : 0.8;
+
+                animate opacity { 
+                    duration: 500ms;
+                }
 
                 area := TouchArea {
-                    visible: !GameAdapter.playing;
                     width: parent.width;
                     height: parent.height;
                     clicked => {
