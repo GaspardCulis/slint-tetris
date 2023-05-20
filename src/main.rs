@@ -49,7 +49,6 @@ pub fn main() {
         }
         game_adapter.set_playing(true);
 
-        println!("Helo");
     });
 
     let game_handle = game.clone();
