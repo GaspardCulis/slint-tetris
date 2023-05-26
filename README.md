@@ -31,8 +31,6 @@ cargo run
 
  - Add a level system to gradually increase speed
  - Add touch buttons
-
-## Star History
  
 ## Credits
 
